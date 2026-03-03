@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../posts/api.service';
+import { OrganizacionService } from '../services/organizacion.service';
 import { Organizacion } from '../models/organizacion.model';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -26,7 +26,7 @@ export class OrganizacionList implements OnInit {
   organizacionEditId: string | null = null;
   expanded: { [key: string]: boolean } = {};
 
-  constructor(private api: ApiService, private fb: FormBuilder, private cdr: ChangeDetectorRef, private dialog: MatDialog) {
+  constructor(private api: OrganizacionService, private fb: FormBuilder, private cdr: ChangeDetectorRef, private dialog: MatDialog) {
     this.organizacionForm = this.fb.group({
       nombre: ['', Validators.required],
     });

@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../posts/api.service';
+import { UsuarioService } from '../services/usuario.service';
 import { Usuario } from '../models/usuario.model';
 import { Organizacion } from '../models/organizacion.model';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
@@ -28,7 +28,7 @@ export class UsuarioList implements OnInit {
   expanded: { [key: string]: boolean } = {};
 
 
-  constructor(private api: ApiService, private fb: FormBuilder, private cdr: ChangeDetectorRef, private dialog: MatDialog) {
+  constructor(private api: UsuarioService, private fb: FormBuilder, private cdr: ChangeDetectorRef, private dialog: MatDialog) {
     this.usuarioForm = this.fb.group({
       name: ['', Validators.required],
       organizacion: ['', Validators.required],
