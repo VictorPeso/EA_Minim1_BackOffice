@@ -15,7 +15,7 @@
   No hay usuarios.
 </p>
 
-<!-- Botón para mostrar formulario de nuevo usuario -->
+<!-- Botón para mostrar formulario de añadir nuevo usuario -->
 <button *ngIf="!mostrarForm" type="button" class="btn" (click)="mostrarFormulario()" style="margin-bottom: 15px;">Añadir Nuevo Usuario</button>
 
 <!-- Formulario para crear o editar usuario -->
@@ -106,23 +106,25 @@
   </table>
 </div>
 
-<div style="margin-top: 10px;">
-
-  <!-- Botones para mostrar más/menos usuarios si supera el limite -->
+<!-- Paginación -->
+<div class="pagination-container" style="margin-top: 20px; display: flex; align-items: center; gap: 10px;">
   <button 
-    *ngIf="!mostrarTodosUsuarios && usuariosFiltrados.length > limite"
     class="btn"
-    (click)="mostrarMas()">
-    Mostrar más
+    (click)="cambiarPagina(paginaActual - 1)" 
+    [disabled]="paginaActual === 1">
+    Anterior
   </button>
-
+  
+  <span>
+    Página {{ paginaActual }} de {{ TotalPaginas() }}
+  </span>
+  
   <button 
-    *ngIf="mostrarTodosUsuarios"
     class="btn"
-    (click)="mostrarTodosUsuarios = false"
-    style="margin-left: 10px;">
-    Mostrar menos
-  </button>
+    (click)="cambiarPagina(paginaActual + 1)" 
+    [disabled]="paginaActual === TotalPaginas()">
+    Siguiente
+  </button>  
 </div>
 
 <!-- Botón para recargar los datos -->
