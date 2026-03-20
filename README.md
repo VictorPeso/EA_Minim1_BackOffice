@@ -1,124 +1,316 @@
-# MiniSpa
+# EA ViveBook BackOffice
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.0.
+BackOffice desarrollado con **Angular** para la gestión de **Libros**, **Autores** y **Usuarios**, conectado a una **API REST** en `http://localhost:1337`.
 
-## Structure
+El proyecto permite:
 
-```
-src/
-├── environments/
-│   └── environment.ts
-│
-└── app/
-    ├── app.ts
-    ├── app.spec.ts
-    ├── app.config.ts
-    ├── app.config.server.ts
-    ├── app.html
-    ├── app.css
-    ├── app.routes.ts
-    ├── app.routes.server.ts
-    │
-    ├── models/
-    │   ├── organizacion.model.ts
-    │   └── usuario.model.ts
-    │
-    ├── services/
-    │   ├── organizacion.service.ts
-    │   ├── organizacion.spec.ts
-    │   ├── usuario.service.ts
-    │   └── usuario.spec.ts
-    │
-    ├── organizacion-list/
-    │   ├── organizacion-list.ts
-    │   ├── organizacion-list.html
-    │   ├── organizacion-list.css
-    │   └── organizacion-list.spec.ts
-    │
-    ├── usuario-list/
-    │   ├── usuario-list.ts
-    │   ├── usuario-list.html
-    │   └── usuario-list.css
-    │
-    └── confirm-dialog/
-        ├── organizacion-list.ts
-        ├── organizacion-list.html
-        ├── organizacion-list.css
-        └── organizacion-list.spec.ts
+- listar elementos no eliminados de cada categoría
+- crear nuevos elementos
+- editar elementos existentes
+- realizar borrado lógico mediante `IsDeleted: true`
+- navegar entre secciones desde una topbar
+- paginar resultados en bloques de 5 elementos
+
+---
+
+## Tecnologías utilizadas
+
+- **Angular**
+- **TypeScript**
+- **RxJS**
+- **Reactive Forms**
+- **REST API**
+- **SCSS/CSS**
+- **JOI** en backend para validación
+
+---
+
+## Instalación
+
+Para instalar las dependencias del proyecto:
+
+```bash
+npm install
 ```
 
 ---
 
-## Development server
+## Ejecución en desarrollo
 
-To start a local development server, run:
+Para iniciar la aplicación en local:
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Después, abre el navegador en la URL habitual de Angular:
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
+```text
+http://localhost:4200
 ```
 
-To generate a new interface (models), run:
+---
 
-```bash
-ng generate interface interface-name
+## Requisitos previos
+
+Antes de arrancar el frontend, asegúrate de que:
+
+- Node.js y npm están instalados
+- la API REST está en ejecución en:
+
+```text
+http://localhost:1337
 ```
 
-To generate a new service, run:
+---
 
-```bash
-ng generate service service-name
+## Funcionalidades principales
+
+### Libros
+
+- listado de libros no eliminados
+- creación de libros
+- edición de libros
+- asociación de autores
+- borrado lógico con `IsDeleted`
+
+### Autores
+
+- listado de autores no eliminados
+- creación de autores
+- edición de autores
+- borrado lógico con `IsDeleted`
+
+### Usuarios
+
+- listado de usuarios no eliminados
+- creación de usuarios
+- edición de usuarios
+- asociación de libros
+- borrado lógico con `IsDeleted`
+
+---
+
+## Comportamiento de la interfaz
+
+Cada sección del BackOffice sigue la misma estructura:
+
+- **columna izquierda**: formulario de creación/edición
+- **columna derecha**: listado paginado de elementos
+- **topbar fija**: navegación entre Libros, Autores y Usuarios
+
+Además:
+
+- al seleccionar un elemento de la lista, sus datos se cargan en el formulario
+- al crear uno nuevo, el formulario entra en modo creación
+- el borrado no hace `DELETE`; realiza un `PUT` actualizando `IsDeleted: true`
+
+---
+
+## Validación
+
+El frontend está adaptado a las reglas de validación del backend definidas con **JOI**.
+
+### Reglas principales
+
+#### Libro
+
+- `isbn`: obligatorio en creación
+- `title`: obligatorio en creación
+- `authors`: opcional
+- `IsDeleted`: opcional
+
+#### Autor
+
+- `fullName`: obligatorio en creación
+- `IsDeleted`: opcional
+
+#### Usuario
+
+- `name`: obligatorio en creación
+- `email`: obligatorio en creación
+- `password`: obligatorio en creación
+- `password`: mínimo 6 caracteres
+- `libros`: opcional
+- `IsDeleted`: opcional
+
+---
+
+## Estructura del proyecto
+
+```text
+src/
+└── app/
+    ├── core/
+    │   ├── models/
+    │   │   ├── autor.model.ts
+    │   │   ├── libro.model.ts
+    │   │   └── usuario.model.ts
+    │   └── services/
+    │       ├── autores.service.ts
+    │       ├── libros.service.ts
+    │       └── usuarios.service.ts
+    │
+    ├── features/
+    │   ├── autores/
+    │   │   ├── components/
+    │   │   │   ├── autor-form/
+    │   │   │   │   ├── autor-form.component.ts
+    │   │   │   │   ├── autor-form.component.html
+    │   │   │   │   └── autor-form.component.css
+    │   │   │   └── autores-list/
+    │   │   │       ├── autores-list.component.ts
+    │   │   │       ├── autores-list.component.html
+    │   │   │       └── autores-list.component.css
+    │   │   └── pages/
+    │   │       └── autores-page/
+    │   │           ├── autores-page.component.ts
+    │   │           ├── autores-page.component.html
+    │   │           └── autores-page.component.css
+    │   │
+    │   ├── libros/
+    │   │   ├── components/
+    │   │   │   ├── libro-form/
+    │   │   │   │   ├── libro-form.component.ts
+    │   │   │   │   ├── libro-form.component.html
+    │   │   │   │   └── libro-form.component.css
+    │   │   │   └── libros-list/
+    │   │   │       ├── libros-list.component.ts
+    │   │   │       ├── libros-list.component.html
+    │   │   │       └── libros-list.component.css
+    │   │   └── pages/
+    │   │       └── libros-page/
+    │   │           ├── libros-page.component.ts
+    │   │           ├── libros-page.component.html
+    │   │           └── libros-page.component.css
+    │   │
+    │   └── usuarios/
+    │       ├── components/
+    │       │   ├── usuario-form/
+    │       │   │   ├── usuario-form.component.ts
+    │       │   │   ├── usuario-form.component.html
+    │       │   │   └── usuario-form.component.css
+    │       │   └── usuarios-list/
+    │       │       ├── usuarios-list.component.ts
+    │       │       ├── usuarios-list.component.html
+    │       │       └── usuarios-list.component.css
+    │       └── pages/
+    │           └── usuarios-page/
+    │               ├── usuarios-page.component.ts
+    │               ├── usuarios-page.component.html
+    │               └── usuarios-page.component.css
+    │
+    ├── shared/
+    │   └── components/
+    │       └── topbar/
+    │           ├── topbar.component.ts
+    │           ├── topbar.component.html
+    │           └── topbar.component.css
+    │
+    ├── app.component.ts
+    ├── app.component.html
+    ├── app.component.css
+    ├── app.config.ts
+    └── app.routes.ts
 ```
 
-To generate a new pipe, run:
+---
 
-```bash
-ng generate pipe pipe-name
+## Rutas principales del frontend
+
+- `/libros`
+- `/autores`
+- `/usuarios`
+
+---
+
+## Conexión con backend
+
+Los servicios Angular están preparados para consumir la API REST en:
+
+```text
+http://localhost:1337
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+### Endpoints usados
 
-```bash
-ng generate --help
+#### Libros
+
+- `GET /libros`
+- `GET /libros/all`
+- `GET /libros/:libroId`
+- `POST /libros`
+- `PUT /libros/:libroId`
+
+#### Autores
+
+- `GET /autores`
+- `GET /autores/all`
+- `GET /autores/:autorId`
+- `POST /autores`
+- `PUT /autores/:autorId`
+
+#### Usuarios
+
+- `GET /usuarios`
+- `GET /usuarios/all`
+- `GET /usuarios/:usuarioId`
+- `POST /usuarios`
+- `PUT /usuarios/:usuarioId`
+
+---
+
+## Paginación
+
+Actualmente la paginación se realiza en frontend:
+
+- 5 elementos por página
+- navegación mediante botones de anterior y siguiente
+- separación por categorías
+
+Esto permite mantener la lógica simple mientras el volumen de datos siga siendo razonable.
+
+---
+
+## Borrado lógico
+
+El sistema no elimina físicamente los registros desde el frontend.
+
+En su lugar, cuando se pulsa el botón de borrar:
+
+- se envía un `PUT`
+- se actualiza el campo:
+
+```json
+{
+  "IsDeleted": true
+}
 ```
 
-## Building
+Después, el elemento deja de aparecer en los listados normales, ya que estos usan los endpoints que filtran por elementos no eliminados.
 
-To build the project run:
+---
 
-```bash
-ng build
-```
+## Posibles mejoras futuras
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+- paginación real desde backend
+- búsqueda y filtros por campos
+- ordenación por columnas
+- mensajes de error más detallados
+- gestión de autenticación y autorización
+- ocultar passwords en los listados de usuarios
+- mejoras visuales responsive adicionales
 
-## Running unit tests
+---
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Notas
 
-```bash
-ng test
-```
+- El proyecto está pensado como BackOffice profesional y funcional.
+- La lógica está organizada por dominio (`libros`, `autores`, `usuarios`) para facilitar mantenimiento y escalabilidad.
+- Los formularios están sincronizados con la validación JOI del backend.
 
-## Running end-to-end tests
+---
 
-For end-to-end (e2e) testing, run:
+## Autor
 
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Proyecto desarrollado para la gestión BackOffice de ViveBook.
