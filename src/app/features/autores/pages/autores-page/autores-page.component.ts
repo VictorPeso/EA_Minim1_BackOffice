@@ -75,7 +75,7 @@ export class AutoresPageComponent implements OnInit {
     this.errorMessage.set('');
 
     this.autoresService
-      .getAutores()
+      .getAllAutores()
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (autores) => {
@@ -245,6 +245,22 @@ export class AutoresPageComponent implements OnInit {
     this.successMessage.set('');
     this.selectedAutor.set(this.createEmptyAutor());
     this.isCreating.set(true);
+  }
+
+  onRestore(autor: Autor): void {
+      if (!autor || !autor._id) return;
+  
+      this.isLoading.set(true);
+      this.autoresService
+        .restoreAutor(autor._id, autor)
+        .pipe(finalize(() => this.isLoading.set(false)))
+        .subscribe({
+          next: () => {
+            this.successMessage.set('Autor restaurado con éxito');
+            this.loadAutores(autor._id);
+          },
+          error: () => this.errorMessage.set('Error al restaurar el autor.')
+        });
   }
 
   onPageChange(page: number): void {

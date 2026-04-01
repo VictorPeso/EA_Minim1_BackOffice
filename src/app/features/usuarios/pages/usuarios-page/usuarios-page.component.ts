@@ -78,7 +78,7 @@ export class UsuariosPageComponent implements OnInit {
     this.errorMessage.set('');
 
     this.usuariosService
-      .getUsuarios()
+      .getAllUsuarios()
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (usuarios) => {
@@ -259,6 +259,22 @@ export class UsuariosPageComponent implements OnInit {
               'No se pudo eliminar el usuario.'
           );
         },
+      });
+  }
+
+  onRestore(usuario: Usuario): void {
+    if (!usuario || !usuario._id) return;
+
+    this.isLoading.set(true);
+    this.usuariosService
+      .restoreUsuario(usuario._id, usuario)
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: () => {
+          this.successMessage.set('Usuario restaurado con éxito');
+          this.loadUsuarios(usuario._id); 
+        },
+        error: () => this.errorMessage.set('Error al restaurar el usuario.')
       });
   }
 

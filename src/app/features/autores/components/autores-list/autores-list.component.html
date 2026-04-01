@@ -43,6 +43,7 @@
         *ngFor="let autor of autores; trackBy: trackByAutorId"
         class="autores-list__card"
         [class.active]="isSelected(autor)"
+        [class.autores-list__card--deleted]="autor.IsDeleted"
         (click)="onSelect(autor)"
       >
         <div class="autores-list__card-top">

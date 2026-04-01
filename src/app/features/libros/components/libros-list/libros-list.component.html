@@ -44,6 +44,7 @@
         *ngFor="let libro of libros; trackBy: trackByLibroId"
         class="libros-list__card"
         [class.active]="isSelected(libro)"
+        [class.libros-list__card--deleted]="libro.IsDeleted"
         (click)="onSelect(libro)"
       >
         <div class="libros-list__card-top">

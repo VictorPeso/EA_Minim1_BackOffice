@@ -43,6 +43,7 @@
         *ngFor="let usuario of usuarios; trackBy: trackByUsuarioId"
         class="usuarios-list__card"
         [class.active]="isSelected(usuario)"
+        [class.usuarios-list__card--deleted]="usuario.IsDeleted"
         (click)="onSelect(usuario)"
       >
         <div class="usuarios-list__card-top">

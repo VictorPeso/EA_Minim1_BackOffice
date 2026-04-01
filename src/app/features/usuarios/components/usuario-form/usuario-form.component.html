@@ -176,6 +176,15 @@
       >
         {{ isDeleting ? 'Eliminando...' : 'Marcar como eliminado' }}
       </button>
+
+      <button 
+        *ngIf="usuario?.IsDeleted" 
+        type="button" 
+        class="usuario-form__button usuario-form__button--success" 
+        (click)="onRestore($event, usuario!)"
+      >
+        Restaurar Usuario
+      </button>
     </div>
   </form>
 </section>

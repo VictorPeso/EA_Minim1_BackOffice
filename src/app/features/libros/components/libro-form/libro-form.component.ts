@@ -41,6 +41,7 @@ export class LibroFormComponent implements OnInit, OnChanges {
   @Output() save = new EventEmitter<Libro>();
   @Output() delete = new EventEmitter<Libro>();
   @Output() cancel = new EventEmitter<void>();
+  @Output() restoreLibro = new EventEmitter<Libro>();
 
   readonly form = this.fb.nonNullable.group({
     _id: [''],
@@ -141,6 +142,10 @@ export class LibroFormComponent implements OnInit, OnChanges {
 
   onCancel(): void {
     this.cancel.emit();
+  }
+  onRestore(event: Event, libro: Libro): void {
+    event.stopPropagation();
+    this.restoreLibro.emit(libro);
   }
 
   trackByAutorId(index: number, autor: Autor): string | number {

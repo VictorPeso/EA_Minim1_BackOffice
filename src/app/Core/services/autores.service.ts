@@ -40,7 +40,7 @@ export class AutoresService {
   }
 
   restoreAutor(autorId: string, autorActual: Autor): Observable<Autor> {
-    return this.http.put<Autor>(`${this.apiUrl}/${autorId}`, {
+    return this.http.put<Autor>(`${this.apiUrl}/restore/${autorId}`, {
       ...autorActual,
       IsDeleted: false,
     });

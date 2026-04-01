@@ -37,6 +37,7 @@ export class AutorFormComponent implements OnInit, OnChanges {
   @Output() save = new EventEmitter<Autor>();
   @Output() delete = new EventEmitter<Autor>();
   @Output() cancel = new EventEmitter<void>();
+  @Output() restoreAutor = new EventEmitter<Autor>();
 
   readonly form = this.fb.nonNullable.group({
     _id: [''],
@@ -104,6 +105,11 @@ export class AutorFormComponent implements OnInit, OnChanges {
   onCancel(): void {
     this.cancel.emit();
   }
+
+  onRestore(event: Event, autor: Autor): void {
+      event.stopPropagation();
+      this.restoreAutor.emit(autor);
+    }
 
   private applyModeValidators(): void {
     if (this.isCreating) {

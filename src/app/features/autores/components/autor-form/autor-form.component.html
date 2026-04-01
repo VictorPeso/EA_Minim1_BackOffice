@@ -81,6 +81,15 @@
       >
         {{ isDeleting ? 'Eliminando...' : 'Marcar como eliminado' }}
       </button>
+
+      <button 
+        *ngIf="autor?.IsDeleted" 
+        type="button" 
+        class="libro-form__button libro-form__button--success" 
+        (click)="onRestore($event, autor!)"
+      >
+        Restaurar Autor
+      </button>
     </div>
   </form>
 </section>

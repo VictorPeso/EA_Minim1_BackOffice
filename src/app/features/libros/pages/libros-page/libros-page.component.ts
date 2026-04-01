@@ -78,7 +78,7 @@ export class LibrosPageComponent implements OnInit {
     this.errorMessage.set('');
 
     this.librosService
-      .getLibros()
+      .getAllLibros()
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (libros) => {
@@ -267,6 +267,21 @@ export class LibrosPageComponent implements OnInit {
     this.isCreating.set(true);
   }
 
+  onRestore(libro: Libro): void {
+    if (!libro || !libro._id) return;
+
+    this.isLoading.set(true);
+    this.librosService
+      .restoreLibro(libro._id, libro)
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: () => {
+          this.successMessage.set('Libro restaurado con éxito');
+          this.loadLibros(libro._id);
+        },
+        error: () => this.errorMessage.set('Error al restaurar el libro.')
+      });
+  }
   onPageChange(page: number): void {
     if (page < 1 || page > this.totalPages()) {
       return;

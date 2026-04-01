@@ -40,7 +40,7 @@ export class LibrosService {
   }
 
   restoreLibro(libroId: string, libroActual: Libro): Observable<Libro> {
-    return this.http.put<Libro>(`${this.apiUrl}/${libroId}`, {
+    return this.http.put<Libro>(`${this.apiUrl}/restore/${libroId}`, {
       ...libroActual,
       IsDeleted: false,
     });
