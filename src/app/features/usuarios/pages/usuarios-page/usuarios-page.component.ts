@@ -36,7 +36,7 @@ export class UsuariosPageComponent implements OnInit {
   readonly currentPage = signal(1);
   readonly pageSize = signal(5);
 
-  readonly totalItems = computed(() => this.usuarios().length);
+  readonly totalItems = computed(() => this.filteredUsuarios().length);
 
   readonly totalPages = computed(() => {
     const total = Math.ceil(this.totalItems() / this.pageSize());
@@ -46,8 +46,27 @@ export class UsuariosPageComponent implements OnInit {
   readonly paginatedUsuarios = computed(() => {
     const start = (this.currentPage() - 1) * this.pageSize();
     const end = start + this.pageSize();
-    return this.usuarios().slice(start, end);
+    return this.filteredUsuarios().slice(start, end);
   });
+
+  readonly searchUsuario = signal('');
+  readonly filteredUsuarios = computed(() => {
+    const term = this.searchUsuario().toLowerCase().trim();
+    const allUsuarios = this.usuarios();
+
+    if (!term) {
+      return allUsuarios;
+    }
+    return allUsuarios.filter((usuario) =>
+      usuario.name?.toLowerCase().includes(term)
+    );
+  }); 
+
+  onSearch(term: string): void {
+    this.searchUsuario.set(term);
+    this.currentPage.set(1);
+  }
+
 
   ngOnInit(): void {
     this.loadLibros();
@@ -59,7 +78,7 @@ export class UsuariosPageComponent implements OnInit {
     this.errorMessage.set('');
 
     this.usuariosService
-      .getUsuarios()
+      .getAllUsuarios()
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (usuarios) => {
@@ -240,6 +259,42 @@ export class UsuariosPageComponent implements OnInit {
               'No se pudo eliminar el usuario.'
           );
         },
+      });
+  }
+
+  onDeletePermanent(usuarioId: string): void {
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    this.usuariosService
+      .permanentDeleteUsuario(usuarioId)
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: () => {
+          this.successMessage.set('Usuario eliminado permanentemente.');
+          this.loadUsuarios();
+        },
+        error: (error) => {
+          console.error('Error al eliminar permanentemente:', error);
+          this.errorMessage.set('Error al eliminar permanentemente el usuario.');
+        }
+      });
+  }
+
+  onRestore(usuario: Usuario): void {
+    if (!usuario || !usuario._id) return;
+
+    this.isLoading.set(true);
+    this.usuariosService
+      .restoreUsuario(usuario._id, usuario)
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: () => {
+          this.successMessage.set('Usuario restaurado con éxito');
+          this.loadUsuarios(usuario._id); 
+        },
+        error: () => this.errorMessage.set('Error al restaurar el usuario.')
       });
   }
 

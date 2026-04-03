@@ -40,13 +40,13 @@ export class LibrosService {
   }
 
   restoreLibro(libroId: string, libroActual: Libro): Observable<Libro> {
-    return this.http.put<Libro>(`${this.apiUrl}/${libroId}`, {
+    return this.http.put<Libro>(`${this.apiUrl}/restore/${libroId}`, {
       ...libroActual,
       IsDeleted: false,
     });
   }
 
-  createLibroByIsbn(isbn: string) : Observable<Libro> {
-    return this.http.get<Libro>(`${this.apiUrl}/isbn/${isbn}`);
+  deleteLibro(libroId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${libroId}`);
   }
 }

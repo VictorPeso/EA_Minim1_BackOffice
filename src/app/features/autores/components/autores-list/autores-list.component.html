@@ -6,6 +6,12 @@
       <p class="autores-list__subtitle">
         Consulta todos los autores no eliminados y selecciona uno para editarlo.
       </p>
+      <input
+        type="text"
+        class="autores-list__search"
+        [formControl]="searchAutor"
+        placeholder="Buscar por nombre..."
+      />
     </div>
 
     <button
@@ -37,6 +43,7 @@
         *ngFor="let autor of autores; trackBy: trackByAutorId"
         class="autores-list__card"
         [class.active]="isSelected(autor)"
+        [class.autores-list__card--deleted]="autor.IsDeleted"
         (click)="onSelect(autor)"
       >
         <div class="autores-list__card-top">
@@ -44,12 +51,23 @@
             {{ autor.fullName || 'Sin nombre' }}
           </h3>
 
-          <span
-            class="autores-list__status"
-            [class.autores-list__status--deleted]="autor.IsDeleted"
-          >
-            {{ autor.IsDeleted ? 'Eliminado' : 'Activo' }}
-          </span>
+          <div class="autores-list__card-actions">
+            <span
+              class="autores-list__status"
+              [class.autores-list__status--deleted]="autor.IsDeleted"
+            >
+              {{ autor.IsDeleted ? 'Eliminado' : 'Activo' }}
+            </span>
+
+            <button 
+              type="button" 
+              class="autores-list__delete-permanent-btn"
+              (click)="onDeletePermanent(autor._id!, $event)"
+              title="Borrado definitivo"
+            >
+              Eliminar definitivamente
+            </button>
+          </div>
         </div>
 
         <div class="autores-list__fields">

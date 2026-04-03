@@ -40,7 +40,9 @@ export class UsuarioFormComponent implements OnInit, OnChanges {
 
   @Output() save = new EventEmitter<Usuario>();
   @Output() delete = new EventEmitter<Usuario>();
+  @Output() deletePermanent = new EventEmitter<Usuario>();
   @Output() cancel = new EventEmitter<void>();
+  @Output() restoreUsuario = new EventEmitter<Usuario>();
 
   readonly form = this.fb.nonNullable.group({
     _id: [''],
@@ -145,8 +147,24 @@ export class UsuarioFormComponent implements OnInit, OnChanges {
     this.delete.emit(currentUsuario);
   }
 
+  onDeletePermanent(): void {
+    const currentUsuario = this.buildCurrentUsuarioFromForm();
+
+    if (!currentUsuario || !currentUsuario._id) {
+      return;
+    }
+
+    if (confirm('¿Estás seguro de que quieres borrar este usuario definitivamente de la base de datos?')) {
+      this.deletePermanent.emit(currentUsuario);
+    }
+  }
+
   onCancel(): void {
     this.cancel.emit();
+  }
+
+  onRestore(event: MouseEvent, usuario: Usuario): void { 
+    this.restoreUsuario.emit(usuario); 
   }
 
   trackByLibroId(index: number, libro: Libro): string | number {

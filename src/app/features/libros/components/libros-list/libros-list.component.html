@@ -6,6 +6,13 @@
       <p class="libros-list__subtitle">
         Consulta todos los libros no eliminados y selecciona uno para editarlo.
       </p>
+      <input
+        type="text"
+        class="libros-list__search"
+        [formControl]="searchBook"
+        placeholder="Buscar por título..."
+        
+      />
     </div>
 
     <button
@@ -37,6 +44,7 @@
         *ngFor="let libro of libros; trackBy: trackByLibroId"
         class="libros-list__card"
         [class.active]="isSelected(libro)"
+        [class.libros-list__card--deleted]="libro.IsDeleted"
         (click)="onSelect(libro)"
       >
         <div class="libros-list__card-top">
@@ -44,12 +52,23 @@
             {{ libro.title || 'Sin título' }}
           </h3>
 
-          <span
-            class="libros-list__status"
-            [class.libros-list__status--deleted]="libro.IsDeleted"
-          >
-            {{ libro.IsDeleted ? 'Eliminado' : 'Activo' }}
-          </span>
+          <div class="libros-list__card-actions">
+            <span
+              class="libros-list__status"
+              [class.libros-list__status--deleted]="libro.IsDeleted"
+            >
+              {{ libro.IsDeleted ? 'Eliminado' : 'Activo' }}
+            </span>
+
+            <button 
+              type="button" 
+              class="libros-list__delete-permanent-btn"
+              (click)="onDeletePermanent(libro._id!, $event)"
+              title="Borrado definitivo"
+            >
+              Eliminar definitivamente
+            </button>
+          </div>
         </div>
 
         <div class="libros-list__fields">

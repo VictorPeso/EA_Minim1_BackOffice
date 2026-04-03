@@ -2,11 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { Libro } from '../../../../Core/models/libro.model';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-libros-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './libros-list.component.html',
   styleUrl: './libros-list.component.css',
 })
@@ -24,6 +26,22 @@ export class LibrosListComponent {
   @Output() pageChange = new EventEmitter<number>();
   @Output() nextPage = new EventEmitter<void>();
   @Output() previousPage = new EventEmitter<void>();
+  
+  @Output() search = new EventEmitter<string>();
+  @Output() deletePermanent = new EventEmitter<string>();
+  searchBook = new FormControl('');
+  private destroy = new Subject<void>();
+
+  ngOnInit(): void {
+    this.searchBook.valueChanges.subscribe((value) => {
+      this.search.emit(value ?? '');
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy.next();
+    this.destroy.complete();
+  }
 
   onSelect(libro: Libro): void {
     this.selectLibro.emit(libro);
@@ -43,6 +61,13 @@ export class LibrosListComponent {
 
   onPreviousPage(): void {
     this.previousPage.emit();
+  }
+
+  onDeletePermanent(libroId: string, event: Event): void {
+    event.stopPropagation();
+    if (confirm('¿Estás seguro de que quieres borrar este libro definitivamente?')) {
+      this.deletePermanent.emit(libroId);
+    }
   }
 
   isSelected(libro: Libro): boolean {

@@ -12,7 +12,10 @@
         [successMessage]="successMessage()"
         (save)="onSaveUsuario($event)"
         (delete)="onDeleteUsuario($event)"
+        (deletePermanent)="onDeletePermanent($event._id!)"
         (cancel)="onCancelEdit()"
+        (restoreUsuario)="onRestore($event)"
+
       >
       </app-usuario-form>
     </aside>
@@ -31,6 +34,8 @@
         (pageChange)="onPageChange($event)"
         (nextPage)="onNextPage()"
         (previousPage)="onPreviousPage()"
+        (search)="onSearch($event)"
+        (deletePermanent)="onDeletePermanent($event)"
       >
       </app-usuarios-list>
     </section>

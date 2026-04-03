@@ -31,7 +31,7 @@ export class AutoresPageComponent implements OnInit {
   readonly currentPage = signal(1);
   readonly pageSize = signal(5);
 
-  readonly totalItems = computed(() => this.autores().length);
+  readonly totalItems = computed(() => this.filteredAutores().length);
 
   readonly totalPages = computed(() => {
     const total = Math.ceil(this.totalItems() / this.pageSize());
@@ -41,8 +41,30 @@ export class AutoresPageComponent implements OnInit {
   readonly paginatedAutores = computed(() => {
     const start = (this.currentPage() - 1) * this.pageSize();
     const end = start + this.pageSize();
-    return this.autores().slice(start, end);
+    return this.filteredAutores().slice(start, end);
   });
+
+  readonly searchAutor = signal('');
+
+  readonly filteredAutores = computed(() => {
+    const term = this.searchAutor().toLowerCase().trim();
+    const allAutores = this.autores();
+
+    if (!term) {
+      return allAutores;
+    }
+
+    return allAutores.filter((autor) =>
+      autor.fullName?.toLowerCase().includes(term)
+    );
+  });
+
+  onSearch(term: string): void {
+    this.searchAutor.set(term);
+    this.currentPage.set(1);
+  }
+
+
 
   ngOnInit(): void {
     this.loadAutores();
@@ -53,7 +75,7 @@ export class AutoresPageComponent implements OnInit {
     this.errorMessage.set('');
 
     this.autoresService
-      .getAutores()
+      .getAllAutores()
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (autores) => {
@@ -218,11 +240,47 @@ export class AutoresPageComponent implements OnInit {
       });
   }
 
+  onDeletePermanent(autorId: string): void {
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    this.autoresService
+      .deleteAutor(autorId)
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: () => {
+          this.successMessage.set('Autor eliminado permanentemente.');
+          this.loadAutores();
+        },
+        error: (error) => {
+          console.error('Error al eliminar permanentemente:', error);
+          this.errorMessage.set('Error al eliminar permanentemente el autor.');
+        }
+      });
+  }
+
   onCancelEdit(): void {
     this.errorMessage.set('');
     this.successMessage.set('');
     this.selectedAutor.set(this.createEmptyAutor());
     this.isCreating.set(true);
+  }
+
+  onRestore(autor: Autor): void {
+      if (!autor || !autor._id) return;
+  
+      this.isLoading.set(true);
+      this.autoresService
+        .restoreAutor(autor._id, autor)
+        .pipe(finalize(() => this.isLoading.set(false)))
+        .subscribe({
+          next: () => {
+            this.successMessage.set('Autor restaurado con éxito');
+            this.loadAutores(autor._id);
+          },
+          error: () => this.errorMessage.set('Error al restaurar el autor.')
+        });
   }
 
   onPageChange(page: number): void {

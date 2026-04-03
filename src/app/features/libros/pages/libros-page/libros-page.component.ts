@@ -40,7 +40,7 @@ export class LibrosPageComponent implements OnInit {
   readonly currentPage = signal(1);
   readonly pageSize = signal(5);
 
-  readonly totalItems = computed(() => this.libros().length);
+  readonly totalItems = computed(() => this.filteredLibros().length);
 
   readonly totalPages = computed(() => {
     const total = Math.ceil(this.totalItems() / this.pageSize());
@@ -50,8 +50,27 @@ export class LibrosPageComponent implements OnInit {
   readonly paginatedLibros = computed(() => {
     const start = (this.currentPage() - 1) * this.pageSize();
     const end = start + this.pageSize();
-    return this.libros().slice(start, end);
+    return this.filteredLibros().slice(start, end);
   });
+
+  readonly searchBook = signal('');
+
+  readonly filteredLibros = computed(() => {
+    const term = this.searchBook().toLowerCase().trim();
+    const allLibros = this.libros();
+    
+    if (!term) return allLibros;
+
+    return allLibros.filter(libro => 
+      libro.title?.toLowerCase().includes(term) || 
+      libro.isbn?.toLowerCase().includes(term)
+    );
+  });
+
+  onSearch(term: string): void {
+    this.searchBook.set(term);
+    this.currentPage.set(1);
+  }
 
   ngOnInit(): void {
     this.loadAutores();
@@ -63,7 +82,7 @@ export class LibrosPageComponent implements OnInit {
     this.errorMessage.set('');
 
     this.librosService
-      .getLibros()
+      .getAllLibros()
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (libros) => {
@@ -245,6 +264,26 @@ export class LibrosPageComponent implements OnInit {
       });
   }
 
+  onDeletePermanent(libroId: string): void {
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    this.librosService
+      .deleteLibro(libroId)
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: () => {
+          this.successMessage.set('Libro eliminado permanentemente.');
+          this.loadLibros();
+        },
+        error: (error) => {
+          console.error('Error al eliminar permanentemente:', error);
+          this.errorMessage.set('Error al eliminar permanentemente el libro.');
+        }
+      });
+  }
+
   onCancelEdit(): void {
     this.errorMessage.set('');
     this.successMessage.set('');
@@ -252,6 +291,21 @@ export class LibrosPageComponent implements OnInit {
     this.isCreating.set(true);
   }
 
+  onRestore(libro: Libro): void {
+    if (!libro || !libro._id) return;
+
+    this.isLoading.set(true);
+    this.librosService
+      .restoreLibro(libro._id, libro)
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: () => {
+          this.successMessage.set('Libro restaurado con éxito');
+          this.loadLibros(libro._id);
+        },
+        error: () => this.errorMessage.set('Error al restaurar el libro.')
+      });
+  }
   onPageChange(page: number): void {
     if (page < 1 || page > this.totalPages()) {
       return;

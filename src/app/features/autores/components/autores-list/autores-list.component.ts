@@ -2,11 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { Autor } from '../../../../Core/models/autor.model';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-autores-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './autores-list.component.html',
   styleUrl: './autores-list.component.css',
 })
@@ -24,6 +26,22 @@ export class AutoresListComponent {
   @Output() pageChange = new EventEmitter<number>();
   @Output() nextPage = new EventEmitter<void>();
   @Output() previousPage = new EventEmitter<void>();
+
+  @Output() search = new EventEmitter<string>();
+  @Output() deletePermanent = new EventEmitter<string>();
+  searchAutor = new FormControl('');
+  private destroy = new Subject<void>();
+  
+  ngOnInit(): void {
+    this.searchAutor.valueChanges.subscribe((value) => {
+      this.search.emit(value ?? '');
+    });
+  }
+  
+  ngOnDestroy(): void {      
+    this.destroy.next();
+    this.destroy.complete();
+  }
 
   onSelect(autor: Autor): void {
     this.selectAutor.emit(autor);
@@ -43,6 +61,13 @@ export class AutoresListComponent {
 
   onPreviousPage(): void {
     this.previousPage.emit();
+  }
+
+  onDeletePermanent(autorId: string, event: Event): void {
+    event.stopPropagation();
+    if (confirm('¿Estás seguro de que quieres borrar este autor definitivamente?')) {
+      this.deletePermanent.emit(autorId);
+    }
   }
 
   isSelected(autor: Autor): boolean {

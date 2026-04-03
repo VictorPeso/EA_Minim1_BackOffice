@@ -141,6 +141,25 @@
       >
         {{ isDeleting ? 'Eliminando...' : 'Marcar como eliminado' }}
       </button>
+
+      <button
+        *ngIf="!isCreating && libro?._id"
+        type="button"
+        class="libro-form__button libro-form__button--danger-outline"
+        (click)="onDeletePermanent()"
+        [disabled]="isSaving || isDeleting"
+      >
+        Eliminar definitivamente
+      </button>
+
+      <button 
+        *ngIf="libro?.IsDeleted" 
+        type="button" 
+        class="libro-form__button libro-form__button--success" 
+        (click)="onRestore($event, libro!)"
+      >
+        Restaurar Libro
+      </button>
     </div>
   </form>
 </section>

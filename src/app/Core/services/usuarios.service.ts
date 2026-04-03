@@ -40,9 +40,13 @@ export class UsuariosService {
   }
 
   restoreUsuario(usuarioId: string, usuarioActual: Usuario): Observable<Usuario> {
-    return this.http.put<Usuario>(`${this.apiUrl}/${usuarioId}`, {
+    return this.http.put<Usuario>(`${this.apiUrl}/restore/${usuarioId}`, {
       ...usuarioActual,
       IsDeleted: false,
     });
+  }
+
+  permanentDeleteUsuario(usuarioId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/permanent/${usuarioId}`);
   }
 }
