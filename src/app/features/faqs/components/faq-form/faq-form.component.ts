@@ -13,6 +13,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { Faq } from '../../../../Core/models/faq.model';
 import { Usuario } from '../../../../Core/models/usuario.model';
+import { Resposta } from '../../../../Core/models/resposta.model';
 
 export interface FaqSavePayload {
   faq: Faq;
@@ -37,6 +38,7 @@ export class FaqFormComponent implements OnInit, OnChanges {
   @Input() isLoadingUsuarios = false;
   @Input() errorMessage = '';
   @Input() successMessage = '';
+  @Input() respostas: Resposta[] = [];
 
   @Output() save = new EventEmitter<FaqSavePayload>();
   @Output() delete = new EventEmitter<Faq>();
@@ -91,6 +93,44 @@ export class FaqFormComponent implements OnInit, OnChanges {
   get respuestasCount(): number {
     return Array.isArray(this.faq?.respuestas) ? this.faq!.respuestas.length : 0;
   }
+
+  get existingRespostas(): Resposta[] {
+    const faqRespostas = this.faq?.respuestas;
+
+    if (!Array.isArray(faqRespostas) || faqRespostas.length === 0) {
+      return [];
+    }
+
+    const faqRespostaIds = faqRespostas
+      .map((resposta) => (typeof resposta === 'string' ? resposta : resposta._id))
+      .filter((id): id is string => !!id);
+
+    return this.respostas.filter(
+      (resposta) => !!resposta._id && faqRespostaIds.includes(resposta._id)
+    );
+  }
+
+  get existingRespostasCount(): number {
+    return this.existingRespostas.length;
+  }
+
+  getUserNameFromResposta(resposta: Resposta): string {
+    if (!resposta.user) {
+      return 'Sin usuario';
+    }
+
+    if (typeof resposta.user === 'string') {
+      return resposta.user;
+    }
+
+    return resposta.user.name || resposta.user._id;
+  }
+
+  trackByRespostaId(index: number, resposta: Resposta): string | number {
+    return resposta._id ?? index;
+  }
+
+
 
   onSubmit(): void {
     this.applyModeValidators();

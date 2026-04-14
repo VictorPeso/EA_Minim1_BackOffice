@@ -92,6 +92,38 @@
           placeholder="Escribe una respuesta por línea. Cada línea se guardará automáticamente como una nueva Resposta."
         ></textarea>
 
+        <div
+          class="faq-form__field faq-form__field--full"
+          *ngIf="!isCreating && existingRespostasCount > 0"
+        >
+          <div class="faq-form__label-row">
+            <label class="faq-form__label">Respuestas anteriores</label>
+            <span class="faq-form__hint">
+              {{ existingRespostasCount }} respuesta{{ existingRespostasCount === 1 ? '' : 's' }}
+            </span>
+          </div>
+
+          <div class="faq-form__existing-respostas">
+            <article
+              class="faq-form__existing-resposta"
+              *ngFor="let resposta of existingRespostas; trackBy: trackByRespostaId"
+            >
+              <div class="faq-form__existing-resposta-meta">
+                <span class="faq-form__existing-resposta-user">
+                  {{ getUserNameFromResposta(resposta) }}
+                </span>
+                <span class="faq-form__existing-resposta-date" *ngIf="resposta.createdAt">
+                  {{ resposta.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                </span>
+              </div>
+
+              <p class="faq-form__existing-resposta-text">
+                {{ resposta.respuesta }}
+              </p>
+            </article>
+          </div>
+        </div>
+
         <p class="faq-form__hint">
           Cada línea no vacía se creará como una nueva respuesta y se asociará a la FAQ.
         </p>
