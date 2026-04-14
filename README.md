@@ -1,3 +1,21 @@
+# Frontend per al Mínim 1 d'EA a la UPC-EETAC [14/4/2026 - QP2526]
+
+## Repositoris de GitHub
+
+- **Backend:** https://github.com/VictorPeso/EA_Minim1_Backend.git
+
+## Decisions de disseny i implementació
+
+Durant el desenvolupament del projecte, i amb l'objectiu de garantir una millor escalabilitat futura, el frontend en Angular es va estructurar mitjançant components **standalone**. Gràcies a aquesta decisió, la incorporació de noves funcionalitats ha resultat més senzilla i eficient.
+
+En aquest context, el procediment habitual ha consistit a reutilitzar un component ja existent, com per exemple el d'**Usuaris**, i adaptar-lo segons les necessitats del nou mòdul. Aquest procés ha inclòs accions com ara:
+
+- El canvi de noms de variables i funcions.
+- L'ajust de la lògica interna del component.
+- Modificació mínima del fitxer HTML per adequar-lo a la nova funcionalitat.
+
+---
+
 # EA ViveBook BackOffice
 
 BackOffice desarrollado con **Angular** para la gestión de **Libros**, **Autores** y **Usuarios**, conectado a una **API REST** en `http://localhost:1337`.
