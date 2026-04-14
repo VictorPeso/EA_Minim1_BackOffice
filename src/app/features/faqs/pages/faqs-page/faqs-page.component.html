@@ -4,12 +4,10 @@
       <app-faq-form
         [faq]="selectedFaq()"
         [usuarios]="usuarios()"
-        [respostas]="respostas()"
         [isSaving]="isSaving()"
         [isDeleting]="isDeleting()"
         [isCreating]="isCreating()"
         [isLoadingUsuarios]="isLoadingUsuarios()"
-        [isLoadingRespostas]="isLoadingRespostas()"
         [errorMessage]="errorMessage()"
         [successMessage]="successMessage()"
         (save)="onSaveFaq($event)"

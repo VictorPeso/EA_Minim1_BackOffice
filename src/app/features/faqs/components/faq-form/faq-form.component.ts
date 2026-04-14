@@ -9,16 +9,15 @@ import {
   inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  FormArray,
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { Faq } from '../../../../Core/models/faq.model';
-import { Resposta } from '../../../../Core/models/resposta.model';
 import { Usuario } from '../../../../Core/models/usuario.model';
+
+export interface FaqSavePayload {
+  faq: Faq;
+  nuevasRespuestas: string[];
+}
 
 @Component({
   selector: 'app-faq-form',
@@ -32,16 +31,14 @@ export class FaqFormComponent implements OnInit, OnChanges {
 
   @Input() faq: Faq | null = null;
   @Input() usuarios: Usuario[] = [];
-  @Input() respostas: Resposta[] = [];
   @Input() isSaving = false;
   @Input() isDeleting = false;
   @Input() isCreating = true;
   @Input() isLoadingUsuarios = false;
-  @Input() isLoadingRespostas = false;
   @Input() errorMessage = '';
   @Input() successMessage = '';
 
-  @Output() save = new EventEmitter<Faq>();
+  @Output() save = new EventEmitter<FaqSavePayload>();
   @Output() delete = new EventEmitter<Faq>();
   @Output() deletePermanent = new EventEmitter<Faq>();
   @Output() cancel = new EventEmitter<void>();
@@ -52,7 +49,7 @@ export class FaqFormComponent implements OnInit, OnChanges {
     user: ['', [Validators.required]],
     pregunta: ['', [Validators.required, Validators.maxLength(1000)]],
     IsDeleted: [false],
-    respuestas: this.fb.array<string>([]),
+    nuevasRespuestasTexto: [''],
   });
 
   ngOnInit(): void {
@@ -77,8 +74,8 @@ export class FaqFormComponent implements OnInit, OnChanges {
     return this.form.controls.pregunta;
   }
 
-  get respuestasControl(): FormArray {
-    return this.form.controls.respuestas;
+  get nuevasRespuestasTextoControl() {
+    return this.form.controls.nuevasRespuestasTexto;
   }
 
   get formTitle(): string {
@@ -91,29 +88,8 @@ export class FaqFormComponent implements OnInit, OnChanges {
       : 'Modifica los datos de la FAQ seleccionada.';
   }
 
-  isRespostaSelected(respostaId: string): boolean {
-    return this.respostasArrayValues.includes(respostaId);
-  }
-
-  onToggleResposta(respostaId: string, checked: boolean): void {
-    if (checked) {
-      if (!this.isRespostaSelected(respostaId)) {
-        this.respuestasControl.push(
-          this.fb.control(respostaId, { nonNullable: true })
-        );
-      }
-    } else {
-      const index = this.respostasArrayValues.findIndex(
-        (id) => id === respostaId
-      );
-
-      if (index >= 0) {
-        this.respuestasControl.removeAt(index);
-      }
-    }
-
-    this.respuestasControl.markAsTouched();
-    this.respuestasControl.updateValueAndValidity();
+  get respuestasCount(): number {
+    return Array.isArray(this.faq?.respuestas) ? this.faq!.respuestas.length : 0;
   }
 
   onSubmit(): void {
@@ -125,17 +101,20 @@ export class FaqFormComponent implements OnInit, OnChanges {
     }
 
     const rawValue = this.form.getRawValue();
-    const respostaIds = this.getSafeRespostaIds(rawValue.respuestas);
+    const nuevasRespuestas = this.extractNewResponses(rawValue.nuevasRespuestasTexto);
 
     const payload: Faq = {
       _id: rawValue._id || undefined,
       user: rawValue.user.trim(),
       pregunta: rawValue.pregunta.trim(),
-      respuestas: respostaIds,
+      respuestas: this.extractRespostaIds(this.faq?.respuestas),
       IsDeleted: rawValue.IsDeleted ?? false,
     };
 
-    this.save.emit(payload);
+    this.save.emit({
+      faq: payload,
+      nuevasRespuestas,
+    });
   }
 
   onDelete(): void {
@@ -178,10 +157,6 @@ export class FaqFormComponent implements OnInit, OnChanges {
     return usuario._id ?? index;
   }
 
-  trackByRespostaId(index: number, resposta: Resposta): string | number {
-    return resposta._id ?? index;
-  }
-
   private applyModeValidators(): void {
     this.userControl.setValidators([Validators.required]);
     this.preguntaControl.setValidators([
@@ -194,27 +169,16 @@ export class FaqFormComponent implements OnInit, OnChanges {
   }
 
   private patchForm(faq: Faq | null): void {
-    const respostaIds = this.extractRespostaIds(faq?.respuestas);
-
     this.form.reset({
       _id: faq?._id ?? '',
       user: this.extractUserId(faq?.user),
       pregunta: faq?.pregunta ?? '',
       IsDeleted: faq?.IsDeleted ?? false,
-      respuestas: [],
-    });
-
-    this.respuestasControl.clear();
-
-    respostaIds.forEach((respostaId) => {
-      this.respuestasControl.push(
-        this.fb.control(respostaId, { nonNullable: true })
-      );
+      nuevasRespuestasTexto: '',
     });
 
     this.form.markAsPristine();
     this.form.markAsUntouched();
-    this.respuestasControl.updateValueAndValidity();
   }
 
   private extractUserId(user: Faq['user'] | undefined): string {
@@ -239,7 +203,6 @@ export class FaqFormComponent implements OnInit, OnChanges {
 
   private buildCurrentFaqFromForm(): Faq | null {
     const rawValue = this.form.getRawValue();
-    const respostaIds = this.getSafeRespostaIds(rawValue.respuestas);
 
     if (!rawValue._id && !rawValue.user.trim() && !rawValue.pregunta.trim()) {
       return null;
@@ -249,21 +212,15 @@ export class FaqFormComponent implements OnInit, OnChanges {
       _id: rawValue._id || undefined,
       user: rawValue.user.trim(),
       pregunta: rawValue.pregunta.trim(),
-      respuestas: respostaIds,
+      respuestas: this.extractRespostaIds(this.faq?.respuestas),
       IsDeleted: rawValue.IsDeleted ?? false,
     };
   }
 
-  private getSafeRespostaIds(
-    values: Array<string | null | undefined>
-  ): string[] {
-    return values.filter(
-      (value): value is string =>
-        typeof value === 'string' && value.trim().length > 0
-    );
-  }
-
-  private get respostasArrayValues(): string[] {
-    return this.respuestasControl.getRawValue() as string[];
+  private extractNewResponses(value: string): string[] {
+    return value
+      .split('\n')
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
   }
 }

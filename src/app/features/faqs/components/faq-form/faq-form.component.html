@@ -76,40 +76,24 @@
 
       <div class="faq-form__field faq-form__field--full">
         <div class="faq-form__label-row">
-          <label class="faq-form__label">Respuestas</label>
-          <span class="faq-form__hint" *ngIf="isLoadingRespostas">
-            Cargando respuestas...
+          <label class="faq-form__label" for="nuevasRespuestasTexto">
+            Respuestas
+          </label>
+          <span class="faq-form__hint">
+            {{ respuestasCount }} respuesta{{ respuestasCount === 1 ? '' : 's' }} actualmente
           </span>
         </div>
 
-        <div
-          class="faq-form__respostas"
-          *ngIf="!isLoadingRespostas && respostas.length > 0; else respostasEmptyState"
-        >
-          <label
-            class="faq-form__resposta-option"
-            *ngFor="let resposta of respostas; trackBy: trackByRespostaId"
-          >
-            <input
-              type="checkbox"
-              class="faq-form__checkbox"
-              [checked]="resposta._id ? isRespostaSelected(resposta._id) : false"
-              (change)="resposta._id && onToggleResposta(resposta._id, $any($event.target).checked)"
-            />
-            <span class="faq-form__resposta-name">
-              {{ resposta.respuesta }}
-            </span>
-          </label>
-        </div>
-
-        <ng-template #respostasEmptyState>
-          <div class="faq-form__empty-respostas">
-            No hay respuestas disponibles para asociar.
-          </div>
-        </ng-template>
+        <textarea
+          id="nuevasRespuestasTexto"
+          class="faq-form__textarea"
+          formControlName="nuevasRespuestasTexto"
+          rows="6"
+          placeholder="Escribe una respuesta por línea. Cada línea se guardará automáticamente como una nueva Resposta."
+        ></textarea>
 
         <p class="faq-form__hint">
-          La selección de respuestas es opcional según la validación actual del backend.
+          Cada línea no vacía se creará como una nueva respuesta y se asociará a la FAQ.
         </p>
       </div>
     </div>

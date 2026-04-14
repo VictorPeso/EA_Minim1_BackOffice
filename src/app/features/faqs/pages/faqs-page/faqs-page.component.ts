@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { finalize } from 'rxjs';
+import { forkJoin, map, of, switchMap } from 'rxjs';
 
 import { Faq } from '../../../../Core/models/faq.model';
 import { Resposta } from '../../../../Core/models/resposta.model';
@@ -8,7 +9,10 @@ import { Usuario } from '../../../../Core/models/usuario.model';
 import { FaqsService } from '../../../../Core/services/faq.service';
 import { RespostaService } from '../../../../Core/services/resposta.service';
 import { UsuariosService } from '../../../../Core/services/usuarios.service';
-import { FaqFormComponent } from '../../components/faq-form/faq-form.component';
+import {
+  FaqFormComponent,
+  FaqSavePayload,
+} from '../../components/faq-form/faq-form.component';
 import { FaqsListComponent } from '../../components/faq-list/faq-list.component';
 
 @Component({
@@ -182,63 +186,57 @@ export class FaqsPageComponent implements OnInit {
     this.selectedFaq.set(this.mapFaqToFormValue(faq));
   }
 
-  onSaveFaq(faqData: Faq): void {
+  onSaveFaq(event: FaqSavePayload): void {
+    const { faq: faqData, nuevasRespuestas } = event;
+
     this.isSaving.set(true);
     this.errorMessage.set('');
     this.successMessage.set('');
 
-    if (this.isCreating() || !faqData._id) {
-      const createPayload = this.buildCreateFaqPayload(faqData);
+    const userId = this.extractUserId(faqData.user);
+    const existingRespostaIds = this.extractRespostaIds(faqData.respuestas);
 
-      this.faqsService
-        .createFaq(createPayload)
-        .pipe(finalize(() => this.isSaving.set(false)))
-        .subscribe({
-          next: (createdFaq) => {
-            this.isCreating.set(false);
-            this.successMessage.set('FAQ creada correctamente.');
+    this.createNewRespostas(userId, nuevasRespuestas)
+      .pipe(
+        switchMap((newRespostaIds) => {
+          const faqConRespostas: Faq = {
+            ...faqData,
+            respuestas: [...existingRespostaIds, ...newRespostaIds],
+          };
 
-            if (createdFaq._id) {
-              this.loadFaqs(createdFaq._id);
-            } else {
-              this.loadFaqs();
-            }
-          },
-          error: (error) => {
-            console.error('Error al crear FAQ:', error);
-            this.errorMessage.set(
-              error?.error?.message ||
-                error?.error?.details?.[0]?.message ||
-                'No se pudo crear la FAQ.'
-            );
-          },
-        });
+          if (this.isCreating() || !faqData._id) {
+            const createPayload = this.buildCreateFaqPayload(faqConRespostas);
+            return this.faqsService.createFaq(createPayload);
+          }
 
-      return;
-    }
-
-    const updatePayload = this.buildUpdateFaqPayload(faqData);
-
-    this.faqsService
-      .updateFaq(faqData._id, updatePayload)
-      .pipe(finalize(() => this.isSaving.set(false)))
+          const updatePayload = this.buildUpdateFaqPayload(faqConRespostas);
+          return this.faqsService.updateFaq(faqData._id, updatePayload);
+        }),
+        finalize(() => this.isSaving.set(false))
+      )
       .subscribe({
-        next: (updatedFaq) => {
+        next: (savedFaq) => {
           this.isCreating.set(false);
-          this.successMessage.set('FAQ actualizada correctamente.');
+          this.successMessage.set(
+            this.isCreating()
+              ? 'FAQ creada correctamente.'
+              : 'FAQ actualizada correctamente.'
+          );
 
-          if (updatedFaq._id) {
-            this.loadFaqs(updatedFaq._id);
+          this.loadRespostas();
+
+          if (savedFaq._id) {
+            this.loadFaqs(savedFaq._id);
           } else {
             this.loadFaqs();
           }
         },
         error: (error) => {
-          console.error('Error al actualizar FAQ:', error);
+          console.error('Error al guardar FAQ:', error);
           this.errorMessage.set(
             error?.error?.message ||
               error?.error?.details?.[0]?.message ||
-              'No se pudo actualizar la FAQ.'
+              'No se pudo guardar la FAQ.'
           );
         },
       });
@@ -374,9 +372,9 @@ export class FaqsPageComponent implements OnInit {
   private mapFaqToFormValue(faq: Faq): Faq {
     return {
       _id: faq._id,
-      user: this.extractUserId(faq.user),
+      user: faq.user,
       pregunta: faq.pregunta ?? '',
-      respuestas: this.extractRespostaIds(faq.respuestas),
+      respuestas: faq.respuestas ?? [],
       IsDeleted: faq.IsDeleted ?? false,
       createdAt: faq.createdAt,
       updatedAt: faq.updatedAt,
@@ -399,6 +397,32 @@ export class FaqsPageComponent implements OnInit {
       respuestas: this.extractRespostaIds(faq.respuestas),
       IsDeleted: faq.IsDeleted ?? false,
     };
+  }
+
+  private createNewRespostas(userId: string, novasRespostas: string[]) {
+    const cleanResponses = novasRespostas
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+
+    if (!cleanResponses.length) {
+      return of([] as string[]);
+    }
+
+    return forkJoin(
+      cleanResponses.map((respuesta) =>
+        this.respostaService.createResposta({
+          user: userId,
+          respuesta,
+          IsDeleted: false,
+        } as Resposta)
+      )
+    ).pipe(
+      map((createdRespostas) =>
+        createdRespostas
+          .map((resposta) => resposta._id)
+          .filter((id): id is string => !!id)
+      )
+    );
   }
 
   private extractUserId(user: Faq['user']): string {

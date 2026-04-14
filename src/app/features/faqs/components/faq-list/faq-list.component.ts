@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 
@@ -91,20 +98,9 @@ export class FaqsListComponent implements OnInit, OnDestroy {
     return faq.user.name || faq.user._id;
   }
 
-  getRespuestasDisplay(faq: Faq): string {
-    if (!Array.isArray(faq.respuestas) || faq.respuestas.length === 0) {
-      return 'Sin respuestas';
-    }
-
-    return faq.respuestas
-      .map((resposta) => {
-        if (typeof resposta === 'string') {
-          return resposta;
-        }
-
-        return resposta.respuesta || resposta._id || '-';
-      })
-      .join(', ');
+  getRespuestasCountDisplay(faq: Faq): string {
+    const count = Array.isArray(faq.respuestas) ? faq.respuestas.length : 0;
+    return `${count} respuesta${count === 1 ? '' : 's'}`;
   }
 
   formatDate(value?: string): string {
@@ -127,7 +123,7 @@ export class FaqsListComponent implements OnInit, OnDestroy {
       },
       {
         label: 'Respuestas',
-        value: this.getRespuestasDisplay(faq),
+        value: this.getRespuestasCountDisplay(faq),
       },
       {
         label: 'Estado',
