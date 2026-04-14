@@ -31,6 +31,14 @@ export const routes: Routes = [
     title: 'BackOffice - Usuarios',
   },
   {
+    path: 'FAQs',
+    loadComponent: () =>
+      import('./features/faqs/pages/faq-page/faq-page.component').then(
+        (m) => m.FAQsPageComponent
+      ),
+    title: 'BackOffice - FAQs',
+  },
+  {
     path: '**',
     redirectTo: 'libros',
   },
