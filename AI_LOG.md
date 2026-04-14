@@ -26,17 +26,44 @@ Durant el desenvolupament del nostre projecte, amb vistes a una futura escalabil
 
 ---
 
-## Entrada X [HH:MM]
+## Entrada 2 [12:30]
 
 **Pregunta**  
-[Quin codi o dubte has plantejat a la IA?]
+Com he de modificar els elements del component faqs.
 
 **Prompt**  
 ```text
-[Enganxa aquí el text literal que has enviat a l'assistent]
+Quiero añadir un nuevo componente que se llame faqs, este contactara con la misma api y hara un listado de preguntas con sus respuestas.
+
+Tiene que tener exactamente la misma estructura que los demas. Para proceder iremos fichero a fichero, tu primero me preguntaras por cual es el estado actual del fichero, el cual sera un copia del equivalente en usuarios, y tu me lo modificaras para que encaje con las especificaciones. 
+
+Antes de inverntarte variables, preguntame por ficheros necearios para tener contexto
 ```
 **Incoherències**  
-- [Exemple: ha proposat una ruta que no existeix al projecte]
+- Falles en l'ús de noms i variables. 
+- Falta de precisió en el que s'ens demanaba, per exemple no mostraba la llista de respostes o no es podia escriure una resposta ja que al principi ha copiat exactament el mode que tenim a Usuaris o s'ha de ficar un llibre existent.
 
 **Solució**  
-- [Exemple: he canviat la ruta `src/components/` per `app/components/`]
+- Modifcarles pel valor correcte manualment. 
+- Modificar el component, sobre tots els elements faq-form on s'ha afegit un text area per escriure la resposta i un llistat a sota per llistarles. Tot i que no he aconseguit a temps que mostri el nom de l'usuari en comptes de del seu id.
+
+---
+
+## Entrada 3 [13:20]
+
+**Pregunta**  
+Com he de modificar els archius HTML i CSS.
+
+**Prompt**  
+```text
+Quiero añadir un nuevo componente que se llame faqs, este contactara con la misma api y hara un listado de preguntas con sus respuestas.
+
+Tiene que tener exactamente la misma estructura que los demas. Para proceder iremos fichero a fichero, tu primero me preguntaras por cual es el estado actual del fichero, el cual sera un copia del equivalente en usuarios, y tu me lo modificaras para que encaje con las especificaciones. 
+
+Antes de inverntarte variables, preguntame por ficheros necearios para tener contexto
+```
+**Incoherències**  
+- Ajustos finals de noms de variables, pero res significatiu.
+
+**Solució**  
+- Modificacions mínimes.
