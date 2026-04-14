@@ -1,35 +1,36 @@
-<section class="usuarios-page">
-  <div class="usuarios-page__layout">
-    <aside class="usuarios-page__form-column">
-      <app-usuario-form
-        [usuario]="selectedUsuario()"
-        [libros]="libros()"
+<section class="faqs-page">
+  <div class="faqs-page__layout">
+    <aside class="faqs-page__form-column">
+      <app-faq-form
+        [faq]="selectedFaq()"
+        [usuarios]="usuarios()"
+        [respostas]="respostas()"
         [isSaving]="isSaving()"
         [isDeleting]="isDeleting()"
         [isCreating]="isCreating()"
-        [isLoadingLibros]="isLoadingLibros()"
+        [isLoadingUsuarios]="isLoadingUsuarios()"
+        [isLoadingRespostas]="isLoadingRespostas()"
         [errorMessage]="errorMessage()"
         [successMessage]="successMessage()"
-        (save)="onSaveUsuario($event)"
-        (delete)="onDeleteUsuario($event)"
+        (save)="onSaveFaq($event)"
+        (delete)="onDeleteFaq($event)"
         (deletePermanent)="onDeletePermanent($event._id!)"
         (cancel)="onCancelEdit()"
-        (restoreUsuario)="onRestore($event)"
-
+        (restoreFaq)="onRestore($event)"
       >
-      </app-usuario-form>
+      </app-faq-form>
     </aside>
 
-    <section class="usuarios-page__list-column">
-      <app-usuarios-list
-        [usuarios]="paginatedUsuarios()"
-        [selectedUsuarioId]="selectedUsuario()?._id ?? null"
+    <section class="faqs-page__list-column">
+      <app-faqs-list
+        [faqs]="paginatedFaqs()"
+        [selectedFaqId]="selectedFaq()?._id ?? null"
         [isLoading]="isLoading()"
         [currentPage]="currentPage()"
         [totalPages]="totalPages()"
         [totalItems]="totalItems()"
         [pageSize]="pageSize()"
-        (selectUsuario)="onSelectUsuario($event)"
+        (selectFaq)="onSelectFaq($event)"
         (createNew)="onCreateNew()"
         (pageChange)="onPageChange($event)"
         (nextPage)="onNextPage()"
@@ -37,7 +38,7 @@
         (search)="onSearch($event)"
         (deletePermanent)="onDeletePermanent($event)"
       >
-      </app-usuarios-list>
+      </app-faqs-list>
     </section>
   </div>
 </section>

@@ -1,51 +1,50 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-
-import { Usuario } from '../../../../Core/models/usuario.model';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 
+import { Faq } from '../../../../Core/models/faq.model';
 
 @Component({
-  selector: 'app-usuarios-list',
+  selector: 'app-faqs-list',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './usuarios-list.component.html',
-  styleUrl: './usuarios-list.component.css',
+  templateUrl: './faq-list.component.html',
+  styleUrl: './faq-list.component.css',
 })
-export class UsuariosListComponent {
-  @Input() usuarios: Usuario[] = [];
-  @Input() selectedUsuarioId: string | null = null;
+export class FaqsListComponent implements OnInit, OnDestroy {
+  @Input() faqs: Faq[] = [];
+  @Input() selectedFaqId: string | null = null;
   @Input() isLoading = false;
   @Input() currentPage = 1;
   @Input() totalPages = 1;
   @Input() totalItems = 0;
-  @Input() pageSize = 8;
+  @Input() pageSize = 5;
 
-  @Output() selectUsuario = new EventEmitter<Usuario>();
+  @Output() selectFaq = new EventEmitter<Faq>();
   @Output() createNew = new EventEmitter<void>();
   @Output() pageChange = new EventEmitter<number>();
   @Output() nextPage = new EventEmitter<void>();
   @Output() previousPage = new EventEmitter<void>();
-
   @Output() search = new EventEmitter<string>();
   @Output() deletePermanent = new EventEmitter<string>();
-  searchUsuario = new FormControl('');
+
+  searchFaq = new FormControl('');
   destroy = new Subject<void>();
 
   ngOnInit(): void {
-    this.searchUsuario.valueChanges.subscribe((value) => {
+    this.searchFaq.valueChanges.subscribe((value) => {
       this.search.emit(value ?? '');
     });
   }
-  
+
   ngOnDestroy(): void {
     this.destroy.next();
     this.destroy.complete();
   }
 
-  onSelect(usuario: Usuario): void {
-    this.selectUsuario.emit(usuario);
+  onSelect(faq: Faq): void {
+    this.selectFaq.emit(faq);
   }
 
   onCreateNew(): void {
@@ -64,62 +63,87 @@ export class UsuariosListComponent {
     this.previousPage.emit();
   }
 
-  onDeletePermanent(usuarioId: string, event: Event): void {
+  onDeletePermanent(faqId: string, event: Event): void {
     event.stopPropagation();
-    if (confirm('¿Estás seguro de que quieres borrar este usuario definitivamente?')) {
-      this.deletePermanent.emit(usuarioId);
+
+    if (confirm('¿Estás seguro de que quieres borrar esta FAQ definitivamente?')) {
+      this.deletePermanent.emit(faqId);
     }
   }
 
-  isSelected(usuario: Usuario): boolean {
-    return !!usuario._id && usuario._id === this.selectedUsuarioId;
+  isSelected(faq: Faq): boolean {
+    return !!faq._id && faq._id === this.selectedFaqId;
   }
 
-  trackByUsuarioId(index: number, usuario: Usuario): string | number {
-    return usuario._id ?? index;
+  trackByFaqId(index: number, faq: Faq): string | number {
+    return faq._id ?? index;
   }
 
-  getLibrosDisplay(usuario: Usuario): string {
-    if (!Array.isArray(usuario.libros) || usuario.libros.length === 0) {
-      return 'Sin libros';
+  getUserDisplay(faq: Faq): string {
+    if (!faq.user) {
+      return 'Sin usuario';
     }
 
-    return usuario.libros
-      .map((libro) => {
-        if (typeof libro === 'string') {
-          return libro;
+    if (typeof faq.user === 'string') {
+      return faq.user;
+    }
+
+    return faq.user.name || faq.user._id;
+  }
+
+  getRespuestasDisplay(faq: Faq): string {
+    if (!Array.isArray(faq.respuestas) || faq.respuestas.length === 0) {
+      return 'Sin respuestas';
+    }
+
+    return faq.respuestas
+      .map((resposta) => {
+        if (typeof resposta === 'string') {
+          return resposta;
         }
 
-        return libro.title || libro._id;
+        return resposta.respuesta || resposta._id || '-';
       })
       .join(', ');
   }
 
-  getVisibleFields(usuario: Usuario): Array<{ label: string; value: string }> {
+  formatDate(value?: string): string {
+    if (!value) {
+      return '-';
+    }
+
+    return new Date(value).toLocaleString('es-ES');
+  }
+
+  getVisibleFields(faq: Faq): Array<{ label: string; value: string }> {
     return [
       {
-        label: 'Nombre',
-        value: usuario.name || '-',
+        label: 'Usuario',
+        value: this.getUserDisplay(faq),
       },
       {
-        label: 'Email',
-        value: usuario.email || '-',
+        label: 'Pregunta',
+        value: faq.pregunta || '-',
       },
       {
-        label: 'Password',
-        value: usuario.password || '-',
-      },
-      {
-        label: 'Libros',
-        value: this.getLibrosDisplay(usuario),
+        label: 'Respuestas',
+        value: this.getRespuestasDisplay(faq),
       },
       {
         label: 'Estado',
-        value: usuario.IsDeleted ? 'Eliminado' : 'Activo',
+        value: faq.IsDeleted ? 'Eliminada' : 'Activa',
+      },
+      {
+        label: 'Creado',
+        value: this.formatDate(faq.createdAt),
+      },
+      {
+        label: 'Actualizado',
+        value: this.formatDate(faq.updatedAt),
       },
       {
         label: 'ID',
-        value: usuario._id || '-',
+        value: faq._id || '-',
       },
     ];
   }

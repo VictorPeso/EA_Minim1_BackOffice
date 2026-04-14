@@ -1,158 +1,123 @@
-<section class="usuario-form">
-  <div class="usuario-form__header">
+<section class="faq-form">
+  <div class="faq-form__header">
     <div>
-      <p class="usuario-form__eyebrow">Formulario</p>
-      <h2 class="usuario-form__title">{{ formTitle }}</h2>
-      <p class="usuario-form__subtitle">
+      <p class="faq-form__eyebrow">Formulario</p>
+      <h2 class="faq-form__title">{{ formTitle }}</h2>
+      <p class="faq-form__subtitle">
         {{ formSubtitle }}
       </p>
     </div>
   </div>
 
   <div
-    class="usuario-form__alert usuario-form__alert--error"
+    class="faq-form__alert faq-form__alert--error"
     *ngIf="errorMessage"
   >
     {{ errorMessage }}
   </div>
 
   <div
-    class="usuario-form__alert usuario-form__alert--success"
+    class="faq-form__alert faq-form__alert--success"
     *ngIf="successMessage"
   >
     {{ successMessage }}
   </div>
 
-  <form class="usuario-form__body" [formGroup]="form" (ngSubmit)="onSubmit()">
+  <form class="faq-form__body" [formGroup]="form" (ngSubmit)="onSubmit()">
     <input type="hidden" formControlName="_id" />
     <input type="hidden" formControlName="IsDeleted" />
 
-    <div class="usuario-form__grid">
-      <div class="usuario-form__field">
-        <label class="usuario-form__label" for="name">Nombre</label>
-        <input
-          id="name"
-          type="text"
-          class="usuario-form__input"
-          formControlName="name"
-          placeholder="Introduce el nombre del usuario"
-        />
-        <p
-          class="usuario-form__error"
-          *ngIf="nameControl.touched && nameControl.errors?.['required']"
+    <div class="faq-form__grid">
+      <div class="faq-form__field">
+        <label class="faq-form__label" for="user">Usuario</label>
+        <select
+          id="user"
+          class="faq-form__select"
+          formControlName="user"
         >
-          El nombre es obligatorio para crear un usuario.
-        </p>
+          <option value="">Selecciona un usuario</option>
+          <option
+            *ngFor="let usuario of usuarios; trackBy: trackByUsuarioId"
+            [value]="usuario._id"
+          >
+            {{ usuario.name }}
+          </option>
+        </select>
         <p
-          class="usuario-form__error"
-          *ngIf="nameControl.touched && nameControl.errors?.['maxlength']"
+          class="faq-form__error"
+          *ngIf="userControl.touched && userControl.errors?.['required']"
         >
-          El nombre es demasiado largo.
-        </p>
-      </div>
-
-      <div class="usuario-form__field">
-        <label class="usuario-form__label" for="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          class="usuario-form__input"
-          formControlName="email"
-          placeholder="Introduce el email"
-        />
-        <p
-          class="usuario-form__error"
-          *ngIf="emailControl.touched && emailControl.errors?.['required']"
-        >
-          El email es obligatorio para crear un usuario.
-        </p>
-        <p
-          class="usuario-form__error"
-          *ngIf="emailControl.touched && emailControl.errors?.['email']"
-        >
-          Introduce un email válido.
-        </p>
-        <p
-          class="usuario-form__error"
-          *ngIf="emailControl.touched && emailControl.errors?.['maxlength']"
-        >
-          El email es demasiado largo.
+          El usuario es obligatorio.
         </p>
       </div>
 
-      <div class="usuario-form__field usuario-form__field--full">
-        <label class="usuario-form__label" for="password">Password</label>
-        <input
-          id="password"
-          type="text"
-          class="usuario-form__input"
-          formControlName="password"
-          placeholder="Introduce la contraseña"
-        />
+      <div class="faq-form__field faq-form__field--full">
+        <label class="faq-form__label" for="pregunta">Pregunta</label>
+        <textarea
+          id="pregunta"
+          class="faq-form__textarea"
+          formControlName="pregunta"
+          rows="5"
+          placeholder="Introduce la pregunta"
+        ></textarea>
         <p
-          class="usuario-form__error"
-          *ngIf="passwordControl.touched && passwordControl.errors?.['required']"
+          class="faq-form__error"
+          *ngIf="preguntaControl.touched && preguntaControl.errors?.['required']"
         >
-          La contraseña es obligatoria para crear un usuario.
+          La pregunta es obligatoria.
         </p>
         <p
-          class="usuario-form__error"
-          *ngIf="passwordControl.touched && passwordControl.errors?.['minlength']"
+          class="faq-form__error"
+          *ngIf="preguntaControl.touched && preguntaControl.errors?.['maxlength']"
         >
-          La contraseña debe tener al menos 6 caracteres.
-        </p>
-        <p
-          class="usuario-form__error"
-          *ngIf="passwordControl.touched && passwordControl.errors?.['maxlength']"
-        >
-          La contraseña es demasiado larga.
+          La pregunta es demasiado larga.
         </p>
       </div>
 
-      <div class="usuario-form__field usuario-form__field--full">
-        <div class="usuario-form__label-row">
-          <label class="usuario-form__label">Libros</label>
-          <span class="usuario-form__hint" *ngIf="isLoadingLibros">
-            Cargando libros...
+      <div class="faq-form__field faq-form__field--full">
+        <div class="faq-form__label-row">
+          <label class="faq-form__label">Respuestas</label>
+          <span class="faq-form__hint" *ngIf="isLoadingRespostas">
+            Cargando respuestas...
           </span>
         </div>
 
         <div
-          class="usuario-form__libros"
-          *ngIf="!isLoadingLibros && libros.length > 0; else librosEmptyState"
+          class="faq-form__respostas"
+          *ngIf="!isLoadingRespostas && respostas.length > 0; else respostasEmptyState"
         >
           <label
-            class="usuario-form__libro-option"
-            *ngFor="let libro of libros; trackBy: trackByLibroId"
+            class="faq-form__resposta-option"
+            *ngFor="let resposta of respostas; trackBy: trackByRespostaId"
           >
             <input
               type="checkbox"
-              class="usuario-form__checkbox"
-              [checked]="libro._id ? isLibroSelected(libro._id) : false"
-              (change)="libro._id && onToggleLibro(libro._id, $any($event.target).checked)"
+              class="faq-form__checkbox"
+              [checked]="resposta._id ? isRespostaSelected(resposta._id) : false"
+              (change)="resposta._id && onToggleResposta(resposta._id, $any($event.target).checked)"
             />
-            <span class="usuario-form__libro-name">
-              {{ libro.title }}
+            <span class="faq-form__resposta-name">
+              {{ resposta.respuesta }}
             </span>
           </label>
         </div>
 
-        <ng-template #librosEmptyState>
-          <div class="usuario-form__empty-libros">
-            No hay libros disponibles para asociar.
+        <ng-template #respostasEmptyState>
+          <div class="faq-form__empty-respostas">
+            No hay respuestas disponibles para asociar.
           </div>
         </ng-template>
 
-        <p class="usuario-form__hint">
-          La selección de libros es opcional según la validación actual del backend.
+        <p class="faq-form__hint">
+          La selección de respuestas es opcional según la validación actual del backend.
         </p>
       </div>
     </div>
 
-    <div class="usuario-form__actions">
+    <div class="faq-form__actions">
       <button
         type="button"
-        class="usuario-form__button usuario-form__button--secondary"
+        class="faq-form__button faq-form__button--secondary"
         (click)="onCancel()"
         [disabled]="isSaving || isDeleting"
       >
@@ -161,39 +126,39 @@
 
       <button
         type="submit"
-        class="usuario-form__button usuario-form__button--primary"
+        class="faq-form__button faq-form__button--primary"
         [disabled]="isSaving || isDeleting"
       >
-        {{ isSaving ? 'Guardando...' : (isCreating ? 'Crear usuario' : 'Guardar cambios') }}
+        {{ isSaving ? 'Guardando...' : (isCreating ? 'Crear FAQ' : 'Guardar cambios') }}
       </button>
 
       <button
-        *ngIf="!isCreating && usuario?._id"
+        *ngIf="!isCreating && faq?._id"
         type="button"
-        class="usuario-form__button usuario-form__button--danger"
+        class="faq-form__button faq-form__button--danger"
         (click)="onDelete()"
         [disabled]="isSaving || isDeleting"
       >
-        {{ isDeleting ? 'Eliminando...' : 'Marcar como eliminado' }}
+        {{ isDeleting ? 'Eliminando...' : 'Marcar como eliminada' }}
       </button>
 
       <button
-        *ngIf="!isCreating && usuario?._id"
+        *ngIf="!isCreating && faq?._id"
         type="button"
-        class="usuario-form__button usuario-form__button--danger-outline"
+        class="faq-form__button faq-form__button--danger-outline"
         (click)="onDeletePermanent()"
         [disabled]="isSaving || isDeleting"
       >
         Eliminar definitivamente
       </button>
 
-      <button 
-        *ngIf="usuario?.IsDeleted" 
-        type="button" 
-        class="usuario-form__button usuario-form__button--success" 
-        (click)="onRestore($event, usuario!)"
+      <button
+        *ngIf="faq?.IsDeleted"
+        type="button"
+        class="faq-form__button faq-form__button--success"
+        (click)="onRestore($event, faq!)"
       >
-        Restaurar Usuario
+        Restaurar FAQ
       </button>
     </div>
   </form>

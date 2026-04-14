@@ -31,10 +31,10 @@ export const routes: Routes = [
     title: 'BackOffice - Usuarios',
   },
   {
-    path: 'FAQs',
+    path: 'faqs',
     loadComponent: () =>
-      import('./features/faqs/pages/faq-page/faq-page.component').then(
-        (m) => m.FAQsPageComponent
+      import('./features/faqs/pages/faqs-page/faqs-page.component').then(
+        (m) => m.FaqsPageComponent
       ),
     title: 'BackOffice - FAQs',
   },

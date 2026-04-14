@@ -16,9 +16,9 @@ import {
   Validators,
 } from '@angular/forms';
 
-import { Libro } from '../../../../Core/models/libro.model';
-import { Usuario } from '../../../../Core/models/usuario.model';
 import { Faq } from '../../../../Core/models/faq.model';
+import { Resposta } from '../../../../Core/models/resposta.model';
+import { Usuario } from '../../../../Core/models/usuario.model';
 
 @Component({
   selector: 'app-faq-form',
@@ -31,11 +31,13 @@ export class FaqFormComponent implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
 
   @Input() faq: Faq | null = null;
-  @Input() libros: Libro[] = [];
+  @Input() usuarios: Usuario[] = [];
+  @Input() respostas: Resposta[] = [];
   @Input() isSaving = false;
   @Input() isDeleting = false;
   @Input() isCreating = true;
-  @Input() isLoadingLibros = false;
+  @Input() isLoadingUsuarios = false;
+  @Input() isLoadingRespostas = false;
   @Input() errorMessage = '';
   @Input() successMessage = '';
 
@@ -43,15 +45,14 @@ export class FaqFormComponent implements OnInit, OnChanges {
   @Output() delete = new EventEmitter<Faq>();
   @Output() deletePermanent = new EventEmitter<Faq>();
   @Output() cancel = new EventEmitter<void>();
-  @Output() restoreUsuario = new EventEmitter<Faq>();
+  @Output() restoreFaq = new EventEmitter<Faq>();
 
   readonly form = this.fb.nonNullable.group({
     _id: [''],
-    name: ['', [Validators.maxLength(150)]],
-    email: ['', [Validators.email, Validators.maxLength(200)]],
-    password: ['', [Validators.maxLength(200)]],
+    user: ['', [Validators.required]],
+    pregunta: ['', [Validators.required, Validators.maxLength(1000)]],
     IsDeleted: [false],
-    libros: this.fb.array<string>([]),
+    respuestas: this.fb.array<string>([]),
   });
 
   ngOnInit(): void {
@@ -59,8 +60,8 @@ export class FaqFormComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['usuario']) {
-      this.patchForm(this.usuario);
+    if (changes['faq']) {
+      this.patchForm(this.faq);
     }
 
     if (changes['isCreating']) {
@@ -68,51 +69,51 @@ export class FaqFormComponent implements OnInit, OnChanges {
     }
   }
 
-  get nameControl() {
-    return this.form.controls.name;
+  get userControl() {
+    return this.form.controls.user;
   }
 
-  get emailControl() {
-    return this.form.controls.email;
+  get preguntaControl() {
+    return this.form.controls.pregunta;
   }
 
-  get passwordControl() {
-    return this.form.controls.password;
-  }
-
-  get librosControl(): FormArray {
-    return this.form.controls.libros;
+  get respuestasControl(): FormArray {
+    return this.form.controls.respuestas;
   }
 
   get formTitle(): string {
-    return this.isCreating ? 'Nuevo usuario' : 'Editar usuario';
+    return this.isCreating ? 'Nueva FAQ' : 'Editar FAQ';
   }
 
   get formSubtitle(): string {
     return this.isCreating
-      ? 'Completa los datos para crear un nuevo usuario.'
-      : 'Modifica los datos del usuario seleccionado.';
+      ? 'Completa los datos para crear una nueva pregunta frecuente.'
+      : 'Modifica los datos de la FAQ seleccionada.';
   }
 
-  isLibroSelected(libroId: string): boolean {
-    return this.librosArrayValues.includes(libroId);
+  isRespostaSelected(respostaId: string): boolean {
+    return this.respostasArrayValues.includes(respostaId);
   }
 
-  onToggleLibro(libroId: string, checked: boolean): void {
+  onToggleResposta(respostaId: string, checked: boolean): void {
     if (checked) {
-      if (!this.isLibroSelected(libroId)) {
-        this.librosControl.push(this.fb.control(libroId, { nonNullable: true }));
+      if (!this.isRespostaSelected(respostaId)) {
+        this.respuestasControl.push(
+          this.fb.control(respostaId, { nonNullable: true })
+        );
       }
     } else {
-      const index = this.librosArrayValues.findIndex((id) => id === libroId);
+      const index = this.respostasArrayValues.findIndex(
+        (id) => id === respostaId
+      );
 
       if (index >= 0) {
-        this.librosControl.removeAt(index);
+        this.respuestasControl.removeAt(index);
       }
     }
 
-    this.librosControl.markAsTouched();
-    this.librosControl.updateValueAndValidity();
+    this.respuestasControl.markAsTouched();
+    this.respuestasControl.updateValueAndValidity();
   }
 
   onSubmit(): void {
@@ -124,14 +125,13 @@ export class FaqFormComponent implements OnInit, OnChanges {
     }
 
     const rawValue = this.form.getRawValue();
-    const libroIds = this.getSafeLibroIds(rawValue.libros);
+    const respostaIds = this.getSafeRespostaIds(rawValue.respuestas);
 
-    const payload: Usuario = {
+    const payload: Faq = {
       _id: rawValue._id || undefined,
-      name: rawValue.name.trim(),
-      email: rawValue.email.trim(),
-      password: rawValue.password,
-      libros: libroIds,
+      user: rawValue.user.trim(),
+      pregunta: rawValue.pregunta.trim(),
+      respuestas: respostaIds,
       IsDeleted: rawValue.IsDeleted ?? false,
     };
 
@@ -139,24 +139,28 @@ export class FaqFormComponent implements OnInit, OnChanges {
   }
 
   onDelete(): void {
-    const currentUsuario = this.buildCurrentUsuarioFromForm();
+    const currentFaq = this.buildCurrentFaqFromForm();
 
-    if (!currentUsuario || !currentUsuario._id) {
+    if (!currentFaq || !currentFaq._id) {
       return;
     }
 
-    this.delete.emit(currentUsuario);
+    this.delete.emit(currentFaq);
   }
 
   onDeletePermanent(): void {
-    const currentUsuario = this.buildCurrentUsuarioFromForm();
+    const currentFaq = this.buildCurrentFaqFromForm();
 
-    if (!currentUsuario || !currentUsuario._id) {
+    if (!currentFaq || !currentFaq._id) {
       return;
     }
 
-    if (confirm('¿Estás seguro de que quieres borrar este usuario definitivamente de la base de datos?')) {
-      this.deletePermanent.emit(currentUsuario);
+    if (
+      confirm(
+        '¿Estás seguro de que quieres borrar esta FAQ definitivamente de la base de datos?'
+      )
+    ) {
+      this.deletePermanent.emit(currentFaq);
     }
   }
 
@@ -164,96 +168,102 @@ export class FaqFormComponent implements OnInit, OnChanges {
     this.cancel.emit();
   }
 
-  onRestore(event: MouseEvent, usuario: Usuario): void {
-    this.restoreUsuario.emit(usuario);
+  onRestore(event: MouseEvent, faq: Faq): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.restoreFaq.emit(faq);
   }
 
-  trackByLibroId(index: number, libro: Libro): string | number {
-    return libro._id ?? index;
+  trackByUsuarioId(index: number, usuario: Usuario): string | number {
+    return usuario._id ?? index;
+  }
+
+  trackByRespostaId(index: number, resposta: Resposta): string | number {
+    return resposta._id ?? index;
   }
 
   private applyModeValidators(): void {
-    if (this.isCreating) {
-      this.nameControl.setValidators([Validators.required, Validators.maxLength(150)]);
-      this.emailControl.setValidators([
-        Validators.required,
-        Validators.email,
-        Validators.maxLength(200),
-      ]);
-      this.passwordControl.setValidators([
-        Validators.required,
-        Validators.minLength(6),
-        Validators.maxLength(200),
-      ]);
-    } else {
-      this.nameControl.setValidators([Validators.maxLength(150)]);
-      this.emailControl.setValidators([Validators.email, Validators.maxLength(200)]);
-      this.passwordControl.setValidators([Validators.minLength(6), Validators.maxLength(200)]);
-    }
+    this.userControl.setValidators([Validators.required]);
+    this.preguntaControl.setValidators([
+      Validators.required,
+      Validators.maxLength(1000),
+    ]);
 
-    this.nameControl.updateValueAndValidity({ emitEvent: false });
-    this.emailControl.updateValueAndValidity({ emitEvent: false });
-    this.passwordControl.updateValueAndValidity({ emitEvent: false });
+    this.userControl.updateValueAndValidity({ emitEvent: false });
+    this.preguntaControl.updateValueAndValidity({ emitEvent: false });
   }
 
-  private patchForm(usuario: Usuario | null): void {
-    const libroIds = this.extractLibroIds(usuario?.libros);
+  private patchForm(faq: Faq | null): void {
+    const respostaIds = this.extractRespostaIds(faq?.respuestas);
 
     this.form.reset({
-      _id: usuario?._id ?? '',
-      name: usuario?.name ?? '',
-      email: usuario?.email ?? '',
-      password: usuario?.password ?? '',
-      IsDeleted: usuario?.IsDeleted ?? false,
-      libros: [],
+      _id: faq?._id ?? '',
+      user: this.extractUserId(faq?.user),
+      pregunta: faq?.pregunta ?? '',
+      IsDeleted: faq?.IsDeleted ?? false,
+      respuestas: [],
     });
 
-    this.librosControl.clear();
+    this.respuestasControl.clear();
 
-    libroIds.forEach((libroId) => {
-      this.librosControl.push(this.fb.control(libroId, { nonNullable: true }));
+    respostaIds.forEach((respostaId) => {
+      this.respuestasControl.push(
+        this.fb.control(respostaId, { nonNullable: true })
+      );
     });
 
     this.form.markAsPristine();
     this.form.markAsUntouched();
-    this.librosControl.updateValueAndValidity();
+    this.respuestasControl.updateValueAndValidity();
   }
 
-  private extractLibroIds(libros: Usuario['libros'] | undefined): string[] {
-    if (!Array.isArray(libros)) {
+  private extractUserId(user: Faq['user'] | undefined): string {
+    if (!user) {
+      return '';
+    }
+
+    return typeof user === 'string' ? user : user._id;
+  }
+
+  private extractRespostaIds(respostas: Faq['respuestas'] | undefined): string[] {
+    if (!Array.isArray(respostas)) {
       return [];
     }
 
-    return libros
-      .map((libro) => (typeof libro === 'string' ? libro : libro._id))
-      .filter((libroId): libroId is string => !!libroId);
+    return respostas
+      .map((resposta) =>
+        typeof resposta === 'string' ? resposta : resposta._id
+      )
+      .filter((respostaId): respostaId is string => !!respostaId);
   }
 
-  private buildCurrentUsuarioFromForm(): Usuario | null {
+  private buildCurrentFaqFromForm(): Faq | null {
     const rawValue = this.form.getRawValue();
-    const libroIds = this.getSafeLibroIds(rawValue.libros);
+    const respostaIds = this.getSafeRespostaIds(rawValue.respuestas);
 
-    if (!rawValue._id && !rawValue.name.trim() && !rawValue.email.trim()) {
+    if (!rawValue._id && !rawValue.user.trim() && !rawValue.pregunta.trim()) {
       return null;
     }
 
     return {
       _id: rawValue._id || undefined,
-      name: rawValue.name.trim(),
-      email: rawValue.email.trim(),
-      password: rawValue.password,
-      libros: libroIds,
+      user: rawValue.user.trim(),
+      pregunta: rawValue.pregunta.trim(),
+      respuestas: respostaIds,
       IsDeleted: rawValue.IsDeleted ?? false,
     };
   }
 
-  private getSafeLibroIds(values: Array<string | null | undefined>): string[] {
+  private getSafeRespostaIds(
+    values: Array<string | null | undefined>
+  ): string[] {
     return values.filter(
-      (value): value is string => typeof value === 'string' && value.trim().length > 0
+      (value): value is string =>
+        typeof value === 'string' && value.trim().length > 0
     );
   }
 
-  private get librosArrayValues(): string[] {
-    return this.librosControl.getRawValue() as string[];
+  private get respostasArrayValues(): string[] {
+    return this.respuestasControl.getRawValue() as string[];
   }
 }

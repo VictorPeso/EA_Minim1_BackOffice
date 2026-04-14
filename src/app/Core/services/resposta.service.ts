@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+
 import { Resposta } from '../models/resposta.model';
 import { environment } from '../../../environments/environment';
 
@@ -10,9 +11,9 @@ import { environment } from '../../../environments/environment';
 export class RespostaService {
   private readonly http = inject(HttpClient);
 
-  private readonly apiUrl = environment.apiUrl + '/respostas';
+  private readonly apiUrl = `${environment.apiUrl}/respostas`;
 
-  getResposta(): Observable<Resposta[]> {
+  getRespostas(): Observable<Resposta[]> {
     return this.http.get<Resposta[]>(this.apiUrl);
   }
 
@@ -32,16 +33,14 @@ export class RespostaService {
     return this.http.put<Resposta>(`${this.apiUrl}/${respostaId}`, resposta);
   }
 
-  softDeleteResposta(respostaId: string, respostaActual: Resposta): Observable<Resposta> {
+  softDeleteResposta(respostaId: string): Observable<Resposta> {
     return this.http.put<Resposta>(`${this.apiUrl}/${respostaId}`, {
-      ...respostaActual,
       IsDeleted: true,
     });
   }
 
-  restoreResposta(respostaId: string, respostaActual: Resposta): Observable<Resposta> {
+  restoreResposta(respostaId: string): Observable<Resposta> {
     return this.http.put<Resposta>(`${this.apiUrl}/restore/${respostaId}`, {
-      ...respostaActual,
       IsDeleted: false,
     });
   }

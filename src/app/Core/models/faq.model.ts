@@ -1,8 +1,13 @@
-import { Resposta } from "./resposta.model";
+import { UsuarioRef } from './usuarioref.model';
+import { Resposta } from './resposta.model';
+
 
 export interface Faq {
-  user: string;
+  _id?: string;
+  user: string | UsuarioRef;
   pregunta: string;
-  respuestas: Resposta[];
+  respuestas: string[] | Resposta[];
   IsDeleted?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }

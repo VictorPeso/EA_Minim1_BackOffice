@@ -1,22 +1,23 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+
 import { Faq } from '../models/faq.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
-export class FaqService {
+export class FaqsService {
   private readonly http = inject(HttpClient);
 
-  private readonly apiUrl = environment.apiUrl + '/faqs';
+  private readonly apiUrl = `${environment.apiUrl}/faqs`;
 
-  getFaq(): Observable<Faq[]> {
+  getFaqs(): Observable<Faq[]> {
     return this.http.get<Faq[]>(this.apiUrl);
   }
 
-  getAllFaq(): Observable<Faq[]> {
+  getAllFaqs(): Observable<Faq[]> {
     return this.http.get<Faq[]>(`${this.apiUrl}/all`);
   }
 
@@ -32,16 +33,14 @@ export class FaqService {
     return this.http.put<Faq>(`${this.apiUrl}/${faqId}`, faq);
   }
 
-  softDeleteFaq(faqId: string, faqActual: Faq): Observable<Faq> {
+  softDeleteFaq(faqId: string): Observable<Faq> {
     return this.http.put<Faq>(`${this.apiUrl}/${faqId}`, {
-      ...faqActual,
       IsDeleted: true,
     });
   }
 
-  restoreFaq(faqId: string, faqActual: Faq): Observable<Faq> {
+  restoreFaq(faqId: string): Observable<Faq> {
     return this.http.put<Faq>(`${this.apiUrl}/restore/${faqId}`, {
-      ...faqActual,
       IsDeleted: false,
     });
   }
